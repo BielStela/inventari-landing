@@ -1,0 +1,267 @@
+:root {
+  --bg: #060606;
+  --ink: #efe9da;
+  --muted: #8b867a;
+  --led: #ffcc24;
+  /* One neutral sans for everything for now; the typographic personality comes later. */
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ui-size: 15px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  /* Soft decorations (the gradient behind the last text) may reach past the
+     viewport; clip them instead of allowing sideways scroll. `clip`, unlike
+     `hidden`, creates no scroll container, so the sticky stages still work. */
+  overflow-x: clip;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.stage {
+  position: relative;
+  /* Set from main.ts (INTRO_MORPH_VH, HOLD_VH); the same value here as a fallback. */
+  height: 270vh;
+}
+/* Outro: starts one viewport early, UNDER the last screen of text (which scrolls
+   over it, see .content), so its map is already pinned in place and fades in as
+   the text leaves, holds briefly, then re-forms into the title, ending on the
+   board at the very bottom of the page. Its height is set from main.ts
+   (OUTRO_HOLD_VH, OUTRO_MORPH_VH); this is the same value as a fallback. */
+.outro {
+  height: 265vh;
+  margin-top: -100vh;
+  z-index: 0;
+}
+.outro canvas {
+  opacity: 0;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+}
+
+canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  font-size: var(--ui-size);
+  color: var(--muted);
+}
+.hint span {
+  display: inline-block;
+  animation: nudge 1.6s ease-in-out infinite;
+}
+@keyframes nudge {
+  50% { transform: translateY(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hint span { animation: none; }
+}
+
+/* The board as a button: invisible, laid exactly over the LED board. */
+.board-button {
+  position: absolute;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+.board-button:focus-visible {
+  outline: 1px solid var(--led);
+  outline-offset: 10px;
+}
+
+/* ─── Projection controls: pause/play and reset icons, shown only with the map ─ */
+.controls {
+  position: absolute;
+  /* left/top = the island's bottom-right corner (set in main.ts); hang inside it. */
+  transform: translate(-100%, -100%);
+  display: flex;
+  gap: 2px;
+}
+.controls button {
+  display: grid;
+  place-items: center;
+  width: 36px; /* a comfortable target around a 20px icon */
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.controls button[hidden] { display: none; }
+.controls button:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+.controls button:focus-visible {
+  outline: 2px solid var(--led);
+  outline-offset: 1px;
+}
+.controls svg {
+  width: 20px;
+  height: 20px;
+  fill: currentColor;
+}
+.controls .icon-reset {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* The pause button shows "pause" while running and "play" while paused. */
+.pause .icon-play,
+.pause.is-paused .icon-pause { display: none; }
+.pause.is-paused .icon-play { display: block; }
+
+/* ─── Text (placeholder copy for now, from content.html) ───────────────────── */
+.content {
+  position: relative;
+  z-index: 1; /* above the outro, whose map fades in underneath the last lines */
+  max-width: 62ch;
+  margin: 0 auto;
+  padding: 16vh 16px 24vh;
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--muted);
+}
+.content section + section {
+  margin-top: 12vh;
+}
+/* The outro map fades in under the last screen of text: a soft dark band down
+   the whole text column keeps it readable over the dots (90% behind the text,
+   easing out to nothing 22vw to either side), fading out at the bottom so it
+   never ends in a hard line over the map. Inside the text's own layer
+   (z-index -1 within .content), so above the map, below the words. */
+.content::before {
+  content: '';
+  position: absolute;
+  inset: 0 -22vw;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to right,
+    transparent,
+    color-mix(in srgb, var(--bg) 72%, transparent) 11vw,
+    color-mix(in srgb, var(--bg) 90%, transparent) 22vw,
+    color-mix(in srgb, var(--bg) 90%, transparent) calc(100% - 22vw),
+    color-mix(in srgb, var(--bg) 72%, transparent) calc(100% - 11vw),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24vh), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 24vh), transparent);
+}
+.content h2 {
+  font-weight: 400;
+  font-size: 26px;
+  line-height: 1.25;
+  color: var(--led);
+  margin: 0 0 0.8em;
+}
+.content p {
+  margin: 0 0 1.1em;
+  color: var(--ink);
+  opacity: 0.82;
+}
+
+/* ─── Ways into the map app ────────────────────────────────────────────────── */
+/* 1. Always there, for visitors who came to use the tool: a quiet link, top-right,
+      with a soft dark backing so it reads over the board and the busy map. */
+.visit-corner {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  padding: 9px 16px;
+  border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg) 75%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  font-size: var(--ui-size);
+  color: var(--ink);
+  text-decoration: none;
+}
+.visit-corner:hover { border-color: color-mix(in srgb, var(--ink) 45%, transparent); }
+
+/* 2. The finale: under the broken title, the page's only solid, coloured element,
+      plus one line of credits at the bottom of the last screen. Faded in by
+      main.ts as the outro settles on the board. */
+.finale {
+  position: absolute;
+  inset: 0;
+  pointer-events: none; /* only the button and credit links take clicks */
+  opacity: 0;
+  visibility: hidden;
+}
+.cta {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--led);
+  color: #141414;
+  font-size: 18px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cta:hover { background: color-mix(in srgb, var(--led) 85%, white); }
+.credits {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 20px;
+  margin: 0;
+  pointer-events: auto;
+  text-align: center;
+  font-size: var(--ui-size);
+  color: var(--muted);
+}
+.credits a { color: inherit; }
+
+.visit-corner:focus-visible,
+.cta:focus-visible,
+.credits a:focus-visible {
+  outline: 2px solid var(--led);
+  outline-offset: 3px;
+}

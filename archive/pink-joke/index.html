@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventari de la destrucció · Pink</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-theme="pink">
+    <section class="stage" id="stage">
+      <div class="sticky">
+        <h1 class="sr-only" lang="ca">Inventari de la destrucció</h1>
+        <canvas id="c" aria-hidden="true"></canvas>
+        <button class="music" id="music" type="button" aria-label="Play music">♪</button>
+        <div class="hint" id="hint" aria-hidden="true"><span>↓</span></div>
+      </div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

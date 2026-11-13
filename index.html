@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Inventari de la destrucció</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <!-- Always available: the way into the map app. The map URL lives only in this file (here and in the finale's button below). -->
+    <a class="visit-corner map-link" href="https://ffg-web.biel-stela.workers.dev/">Visit map →</a>
+
+    <!-- Intro: the title collapses into the map (the data as of 2024), then the projection runs. -->
+    <section class="stage" id="stage">
+      <div class="sticky">
+        <h1 class="sr-only" lang="ca">Inventari de la destrucció</h1>
+        <canvas aria-hidden="true"></canvas>
+        <button class="board-button" id="board" type="button" aria-label="Show the map of rural construction">
+        </button>
+        <div class="controls" role="group" aria-label="Projection">
+          <button type="button" class="pause" aria-label="Pause">
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.4-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6z" /></svg>
+          </button>
+          <button type="button" class="reset" aria-label="Reset to the original data">
+            <svg class="icon-reset" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" /><path d="M3.5 3.8v4.7h4.7" /></svg>
+          </button>
+        </div>
+        <div class="hint" id="hint">Scroll <span>↓</span></div>
+      </div>
+    </section>
+
+    <article class="content" id="content"></article>
+
+    <!-- Outro: the map comes back, as far as the projection got, and re-forms into the title. -->
+    <section class="stage outro" id="outro" aria-label="The title, rebuilt from the projected map">
+      <div class="sticky">
+        <canvas aria-hidden="true"></canvas>
+        <div class="controls" role="group" aria-label="Projection">
+          <button type="button" class="pause" aria-label="Pause">
+            <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1" /><rect x="14" y="5" width="4" height="14" rx="1" /></svg>
+            <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.6v12.8a1 1 0 0 0 1.5.86l10.4-6.4a1 1 0 0 0 0-1.72L9.5 4.74A1 1 0 0 0 8 5.6z" /></svg>
+          </button>
+          <button type="button" class="reset" aria-label="Reset to the original data">
+            <svg class="icon-reset" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1" /><path d="M3.5 3.8v4.7h4.7" /></svg>
+          </button>
+        </div>
+        <!-- The finale: under the rebuilt (broken) title, once the outro settles on it. -->
+        <div class="finale" id="finale">
+          <a class="cta map-link" href="https://ffg-web.biel-stela.workers.dev/">Visit the map →</a>
+          <p class="credits">[Credits placeholder: data sources · partners · licence]</p>
+        </div>
+      </div>
+    </section>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
