@@ -10,7 +10,7 @@ const morph = morphJson as Morph
 // ─── Tunables ────────────────────────────────────────────────────────────────
 const FLY_START = 0.12 // progress where LEDs start leaving the board
 const FLY_DUR = 0.42 // per-LED flight length (in progress units)
-const SPLIT_AT = 0.7 // fraction of its flight after which an LED starts splitting into its quarters
+const SPLIT_DUR = 0.08 // once every LED has landed, all split into their quarters together over this span
 
 // Colours. Lit LEDs are data (yellow); unlit LEDs are basemap (grey). Same colours on the map.
 const BG = [6, 6, 6]
@@ -31,8 +31,10 @@ const mix = (a: number[], b: number[], t: number) => [lerp(a[0], b[0], t), lerp(
 const rgb = (c: number[]) => `rgb(${c[0] | 0},${c[1] | 0},${c[2] | 0})`
 
 const [BOARD_X, BOARD_Y] = morph.board
-/** Progress at which the last LED has landed and split: from here on, the frame IS the finished map. */
-export const MAP_SETTLED_AT = Math.min(1, FLY_START + Math.max(...morph.leds.map((l) => l[5])) + FLY_DUR)
+/** Progress at which the last LED has landed: the island is formed, still at board resolution. */
+const LANDED_AT = FLY_START + Math.max(...morph.leds.map((l) => l[5])) + FLY_DUR
+/** Progress at which the split is done: from here on, the frame IS the finished map. */
+export const MAP_SETTLED_AT = Math.min(1, LANDED_AT + SPLIT_DUR)
 const [ISLAND_X, ISLAND_Y] = morph.island
 
 /** Lattice spacing P (px) and the screen box of the board at rest. Both board and island fit. */
@@ -176,14 +178,15 @@ export function createScene(canvas: HTMLCanvasElement, sprawl: Sprawl) {
       return
     }
 
-    // In between: housings fade; each LED flies to its tile as one dot, then splits
-    // into the tile's quarters (half the size, each with its own map colour).
+    // In between: housings fade; each LED flies to its tile as one dot. Once the whole
+    // island has formed, every dot splits into its tile's quarters at once (half the
+    // size, each with its own map colour).
     const blockFade = smooth(0.02, 0.16, p)
+    const split = smooth(LANDED_AT, MAP_SETTLED_AT, p)
     if (blockFade < 1) drawBlocks(blockFade)
     particles.forEach((q, i) => {
       const t = clamp((p - FLY_START - q.delay) / FLY_DUR)
-      const travel = ease(clamp(t / SPLIT_AT))
-      const split = smooth(SPLIT_AT - 0.08, 1, t)
+      const travel = ease(t)
       led(
         lerp(q.tx, q.cx, travel) + q.ox * split,
         lerp(q.ty, q.cy, travel) + q.oy * split,
