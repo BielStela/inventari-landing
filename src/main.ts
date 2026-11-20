@@ -19,6 +19,7 @@ import { createSprawlClock } from './sprawl-clock.ts'
 import morph from './morph.json'
 import type { Morph } from './morph-format.ts'
 import content from './content.html?raw'
+import { listingFor } from './listings.ts'
 
 document.querySelector('#content')!.innerHTML = content
 
@@ -194,11 +195,60 @@ for (const v of views) {
   })
   v.controls.querySelector('.reset')!.addEventListener('click', () => {
     sprawl.reset()
+    hideListing() // its dot may not be built any more
     drawAll(true)
     syncControls()
     v.controls.querySelector<HTMLElement>('.pause')!.focus() // reset hides itself; keep focus in the group
   })
 }
+
+// ─── Listings: hover a built dot of the finished map ─────────────────────────────
+// Each built (yellow) dot "is" a luxury property for sale: hovering it with a
+// mouse rings the dot and shows a fake listing next to it. Only on the finished,
+// fully shown map; any scroll hides it (the next mouse move brings it back).
+const ring = document.querySelector<HTMLElement>('#dot-ring')!
+const card = document.querySelector<HTMLElement>('#listing')!
+const GAP = 12, MARGIN = 16 // px: card to dot, card to viewport edge
+let shownDot = -1
+
+function hideListing() {
+  ring.hidden = card.hidden = true
+  shownDot = -1
+}
+
+function showListing(canvas: HTMLCanvasElement, dot: { i: number; x: number; y: number; r: number }) {
+  const l = listingFor(dot.i)
+  card.lang = l.lang
+  card.querySelector('img')!.src = l.photo
+  card.querySelector('.listing-title')!.textContent = l.title
+  card.querySelector('.listing-price')!.textContent = l.price
+  card.querySelector('.listing-details')!.textContent = l.details
+  const c = canvas.getBoundingClientRect()
+  const x = c.left + dot.x, y = c.top + dot.y
+  const d = dot.r * 2 + 6 // ring diameter: just outside the dot
+  Object.assign(ring.style, { width: `${d}px`, height: `${d}px`, transform: `translate(${x - d / 2}px, ${y - d / 2}px)` })
+  ring.hidden = card.hidden = false
+  // To the right of the dot, or to its left if it would leave the viewport; centred vertically.
+  const w = card.offsetWidth, h = card.offsetHeight
+  let left = x + d / 2 + GAP
+  if (left + w > innerWidth - MARGIN) left = x - d / 2 - GAP - w
+  const top = clamp(y - h / 2, MARGIN, innerHeight - h - MARGIN)
+  card.style.transform = `translate(${left}px, ${top}px)`
+}
+
+for (const v of views) {
+  const canvas = v.stage.querySelector('canvas')!
+  canvas.addEventListener('pointermove', (e) => {
+    if (e.pointerType !== 'mouse') return
+    const dot = v.p === 1 && v.fade() > 0.99 ? v.scene.dotAt(e.offsetX, e.offsetY) : null
+    if (!dot) return hideListing()
+    if (dot.i === shownDot) return
+    shownDot = dot.i
+    showListing(canvas, dot)
+  })
+  canvas.addEventListener('pointerleave', hideListing)
+}
+addEventListener('scroll', hideListing, { passive: true })
 
 // ─── The board as a button ────────────────────────────────────────────────────
 // A real <button> laid over the intro board. Clicking (or Enter/Space) scrolls the

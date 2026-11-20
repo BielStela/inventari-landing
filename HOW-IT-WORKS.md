@@ -512,7 +512,7 @@ split look like a subdivision, not like a change of style.
 | `BLOCK` | 18, 17, 16 | LED housing |
 | `OFF` | 38, 36, 33 | Unlit LED = basemap dot |
 | `COAST` | 74, 71, 65 | Coastline basemap dot |
-| `ON` | 255, 204, 36 | Lit LED = data dot (warm yellow, `#ffcc24`) |
+| `ON` | 244, 182, 44 | Lit LED = data dot (warm amber, `#f4b62c`) |
 
 The same yellow and the same grey mean the same thing on both pictures: **lit is
 data, unlit is land**.

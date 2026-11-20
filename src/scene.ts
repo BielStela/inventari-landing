@@ -16,7 +16,7 @@ const SPLIT_DUR = 0.08 // once every LED has landed, all split into their quarte
 const BG = [6, 6, 6]
 const BLOCK = [18, 17, 16] // LED block housing
 const OFF = [38, 36, 33] // unlit LED = basemap
-const ON = [255, 204, 36] // lit LED = data (warm yellow)
+const ON = [244, 182, 44] // lit LED = data (warm amber)
 const COAST = [74, 71, 65] // basemap dots on the coastline: a touch lighter than unlit LEDs
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -86,10 +86,17 @@ export function createScene(canvas: HTMLCanvasElement, sprawl: Sprawl) {
   let blocks: Rect[] = []
   let particles: Particle[] = [] // particle i ↔ sprawl cell i
   let B = 0 // board LED diameter (px)
+  let P = 0 // lattice spacing (px); map dots sit on a grid of P/2
+  const cells = new Map<number, number>() // map grid cell → particle index, for dotAt()
+  const cellKey = (x: number, y: number) => {
+    // Map dots sit at (m + ½)·P/2 from the screen centre, m an integer: round to m.
+    const h = P / 2
+    return (Math.round(x / h - 0.5) + 4096) * 8192 + Math.round(y / h - 0.5) + 4096
+  }
 
   /** Scale the stored grid-unit morph to the viewport. */
   function build(vw: number, vh: number) {
-    const { P } = boardBox(vw, vh)
+    P = boardBox(vw, vh).P
     B = P * 0.72
     blocks = morph.blocks.map(([x, y, w, h]) => ({ x: x * P, y: y * P, w: w * P, h: h * P }))
     particles = []
@@ -107,6 +114,19 @@ export function createScene(canvas: HTMLCanvasElement, sprawl: Sprawl) {
         first = false
       })
     })
+    cells.clear()
+    particles.forEach((q, i) => cells.set(cellKey(q.cx + q.ox, q.cy + q.oy), i))
+  }
+
+  /**
+   * The built (yellow) map dot whose grid cell contains (x, y), in canvas px, or
+   * null. Only meaningful while the finished map is drawn (p = 1).
+   */
+  function dotAt(x: number, y: number) {
+    const i = cells.get(cellKey(x - W / 2, y - H / 2))
+    if (i === undefined || !sprawl.isAlive(i)) return null
+    const q = particles[i]
+    return { i, x: W / 2 + q.cx + q.ox, y: H / 2 + q.cy + q.oy, r: B / 4 }
   }
 
   // Current colours, from the sprawl state: the board LED (built quarters ÷ reference)
@@ -197,5 +217,5 @@ export function createScene(canvas: HTMLCanvasElement, sprawl: Sprawl) {
     flush()
   }
 
-  return { resize, draw }
+  return { resize, draw, dotAt }
 }
